@@ -3,10 +3,13 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   InternalServerErrorException,
   Post,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { AppService } from './app.service';
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -21,8 +24,9 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  getDashboard(): string {
+    return readFileSync(join(process.cwd(), 'index.html'), 'utf8');
   }
 
   @Get('test')
@@ -71,7 +75,6 @@ export class AppController {
           `GitHub rollback dispatch failed with status ${response.status}: ${errorBody}`,
         );
       }
-      console.log("ini bug")
 
       return {
         message: 'Rollback initiated successfully',
