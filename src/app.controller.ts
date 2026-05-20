@@ -76,7 +76,7 @@ export class AppController {
         );
       }
 
-      console.log("ini aman yaa :)")
+      console.log("ini bug :(")
 
       return {
         message: 'Rollback initiated successfully',
