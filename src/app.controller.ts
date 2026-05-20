@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
   Post,
 } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { AppService } from './app.service';
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -40,8 +41,11 @@ export class AppController {
     }
 
     try {
+      const requestId = randomUUID();
       const urlRollback =
         'https://api.github.com/repos/wintechdeveloper1/Rollback-System/actions/workflows/rollback.yaml/dispatches';
+      const actionsUrl =
+        'https://github.com/wintechdeveloper1/Rollback-System/actions/workflows/rollback.yaml';
       const response = await fetch(urlRollback, {
         method: 'POST',
         headers: {
@@ -55,6 +59,7 @@ export class AppController {
           inputs: {
             branch: body.branch,
             sha: body.sha,
+            request_id: requestId,
           },
         }),
       });
@@ -66,11 +71,12 @@ export class AppController {
           `GitHub rollback dispatch failed with status ${response.status}: ${errorBody}`,
         );
       }
-      console.log("ini bug misal nyaa lagi :)", response)
 
       return {
         message: 'Rollback initiated successfully',
         githubStatus: response.status,
+        requestId,
+        actionsUrl,
       };
     } catch (error) {
       if (error instanceof InternalServerErrorException) {
