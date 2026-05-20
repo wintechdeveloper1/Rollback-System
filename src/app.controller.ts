@@ -76,6 +76,8 @@ export class AppController {
         );
       }
 
+      console.log("ini aman yaa :)")
+
       return {
         message: 'Rollback initiated successfully',
         githubStatus: response.status,

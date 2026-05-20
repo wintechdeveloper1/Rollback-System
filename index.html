@@ -516,10 +516,6 @@
             </div>
 
             <div class="rollback-box">
-              <div class="field">
-                <label for="confirmSha">Type the short SHA to confirm</label>
-                <input id="confirmSha" placeholder="Example: 7e2c036" />
-              </div>
               <button class="button danger" id="rollbackButton" disabled>
                 <svg class="icon" viewBox="0 0 24 24" fill="none">
                   <path
@@ -530,7 +526,7 @@
                     stroke-linejoin="round"
                   />
                 </svg>
-                Start Rollback
+                Rollback to Selected Commit
               </button>
             </div>
           </div>
@@ -589,7 +585,6 @@
         selectedSha: document.querySelector('#selectedSha'),
         selectedMessage: document.querySelector('#selectedMessage'),
         selectedAuthor: document.querySelector('#selectedAuthor'),
-        confirmSha: document.querySelector('#confirmSha'),
         rollbackButton: document.querySelector('#rollbackButton'),
         refreshButton: document.querySelector('#refreshButton'),
         statusBox: document.querySelector('#statusBox'),
@@ -715,20 +710,13 @@
         els.selectedSha.textContent = commit?.sha || '-';
         els.selectedMessage.textContent = commit?.commit.message.split('\n')[0] || '-';
         els.selectedAuthor.textContent = commit?.commit.author?.name || '-';
-        els.confirmSha.value = '';
-        els.rollbackButton.disabled = true;
-
         if (!commit) {
+          els.rollbackButton.disabled = true;
           setStatus('Choose a commit to prepare rollback.', 'warning');
         } else {
+          els.rollbackButton.disabled = false;
           setStatus(`Ready to rollback ${state.selectedBranch} to ${shortSha(commit.sha)}.`, 'success');
         }
-      }
-
-      function validateConfirmInput() {
-        const commit = state.selectedCommit;
-        const expected = shortSha(commit?.sha);
-        els.rollbackButton.disabled = !commit || els.confirmSha.value.trim() !== expected;
       }
 
       function openConfirmModal() {
@@ -811,7 +799,6 @@
         renderCommits();
       });
 
-      els.confirmSha.addEventListener('input', validateConfirmInput);
       els.rollbackButton.addEventListener('click', openConfirmModal);
       els.cancelRollback.addEventListener('click', closeConfirmModal);
       els.confirmRollback.addEventListener('click', submitRollback);
