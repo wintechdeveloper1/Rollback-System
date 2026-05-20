@@ -71,7 +71,7 @@ export class AppController {
           `GitHub rollback dispatch failed with status ${response.status}: ${errorBody}`,
         );
       }
-      console.log("ini aman")
+      console.log("ini bug")
 
       return {
         message: 'Rollback initiated successfully',
