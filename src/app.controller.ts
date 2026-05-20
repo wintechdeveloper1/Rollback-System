@@ -7,6 +7,8 @@ import {
   Post,
 } from '@nestjs/common';
 import { AppService } from './app.service';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 type RollbackPayload = {
   branch: string;
