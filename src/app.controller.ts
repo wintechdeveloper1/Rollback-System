@@ -1,5 +1,17 @@
-import { Body, Controller, Get, InternalServerErrorException, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  InternalServerErrorException,
+  Post,
+} from '@nestjs/common';
 import { AppService } from './app.service';
+
+type RollbackPayload = {
+  branch: string;
+  sha: string;
+};
 
 @Controller()
 export class AppController {
@@ -16,28 +28,53 @@ export class AppController {
   }
 
   @Post('rollback')
-  async rollback(@Body() body: { branch: string, sha: string }) {
+  async rollback(@Body() body: RollbackPayload) {
+    if (!body.branch || !body.sha) {
+      throw new BadRequestException('branch and sha are required');
+    }
+
+    if (!process.env.GITHUB_TOKEN) {
+      throw new InternalServerErrorException('GITHUB_TOKEN is not configured');
+    }
+
     try {
-      const urlRollback = `https://api.github.com/repos/wintechdeveloper1/Rollback-System/actions/workflows/rollback.yml/dispatches`
+      const urlRollback =
+        'https://api.github.com/repos/wintechdeveloper1/Rollback-System/actions/workflows/rollback.yaml/dispatches';
       const response = await fetch(urlRollback, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
+          Accept: 'application/vnd.github+json',
+          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
           'Content-Type': 'application/json',
+          'X-GitHub-Api-Version': '2022-11-28',
         },
         body: JSON.stringify({
           ref: body.branch,
-          inputs: { sha: body.sha },
+          inputs: {
+            branch: body.branch,
+            sha: body.sha,
+          },
         }),
-      })
+      });
 
-      console.log("ini error yaa :)")
+      if (!response.ok) {
+        const errorBody = await response.text();
+
+        throw new InternalServerErrorException(
+          `GitHub rollback dispatch failed with status ${response.status}: ${errorBody}`,
+        );
+      }
+
       return {
         message: 'Rollback initiated successfully',
-        response
-      }
+        githubStatus: response.status,
+      };
     } catch (error) {
-      throw new InternalServerErrorException(error) 
+      if (error instanceof InternalServerErrorException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(error);
     }
   }
 }
