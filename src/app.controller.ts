@@ -30,6 +30,8 @@ export class AppController {
           inputs: { sha: body.sha },
         }),
       })
+
+      console.log("ini error yaa :)")
       return {
         message: 'Rollback initiated successfully',
         response
